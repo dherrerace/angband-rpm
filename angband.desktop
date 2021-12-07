@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Angband
+GenericName=Roguelike game
+Comment=Angband - Roguelike game
+Exec=/usr/bin/angband
+Icon=angband
+Terminal=false
+Type=Application
+Categories=Game;RolePlaying;
+Version=1.0
