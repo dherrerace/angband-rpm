@@ -3,7 +3,7 @@ Encoding=UTF-8
 Name=Angband
 GenericName=Roguelike game
 Comment=Angband - Roguelike game
-Exec=/usr/bin/angband
+Exec=sh -c "if [ \\$XDG_SESSION_TYPE == \"wayland\" ]; then env SDL_VIDEODRIVER=wayland angband -msdl2; else angband -msdl2; fi"
 Icon=angband
 Terminal=false
 Type=Application

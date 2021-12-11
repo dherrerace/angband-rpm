@@ -1,0 +1,19 @@
+diff --git a/src/main-sdl2.c b/src/main-sdl2.c
+index 21df5b53d..5c08a63c4 100644
+--- a/src/main-sdl2.c
++++ b/src/main-sdl2.c
+@@ -5613,9 +5613,14 @@ static void init_systems(void)
+ 	SDL_EventState(SDL_FINGERMOTION, SDL_DISABLE);
+ 	SDL_EventState(SDL_FINGERDOWN, SDL_DISABLE);
+ 	SDL_EventState(SDL_FINGERUP, SDL_DISABLE);
++	/* Ignore Keymap changed events since they are not handled */
++	SDL_EventState(SDL_KEYMAPCHANGED, SDL_DISABLE);
+ 
+ 	SDL_StartTextInput();
+ 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
++#ifdef SDL_HINT_POLL_SENTINEL
++	SDL_SetHint(SDL_HINT_POLL_SENTINEL, "0");
++#endif
+ }
+ 
+ errr init_sdl2(int argc, char **argv)

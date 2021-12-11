@@ -1,11 +1,34 @@
 #!/bin/sh
 
-VERSION=$1
+set -e
 
-tar -xzvf angband-${VERSION}.tar.gz
-rm -rf angband-${VERSION}/lib/tiles/shockbolt
+GIT_TAG='4.2.3'
+VERSION="$(sed -n 's/Version:\s*//p' *.spec)"
 
-sed -ie 's/shockbolt//' angband-${VERSION}/lib/tiles/Makefile
-sed -ie '/name:5:Shockbolt/,$d' angband-${VERSION}/lib/tiles/list.txt
+# Retrieve and set version
+git clone https://github.com/angband/angband.git
+ 
+pushd angband
+git reset --hard "${GIT_TAG}"
 
-tar -czvf angband-$VERSION-noshockbolt.tar.gz angband-$VERSION
+# Remove restricted assets
+## Shockbolt tileset aren't distributed under a valid license
+rm -rf lib/tiles/shockbolt
+
+## Sound files aren't distributed under a valid license
+rm -rf lib/sounds/*
+
+## Windows library headers aren't distributed under a valid license
+rm -rf src/cocoa
+rm -rf src/nds
+rm -rf src/win
+
+## Clean up
+git apply ../fix-restricted.patch
+
+rm -rf .git
+popd
+
+mv angband angband-$VERSION
+tar -czvf angband-$VERSION-norestricted.tar.gz angband-$VERSION
+rm -rf angband-$VERSION

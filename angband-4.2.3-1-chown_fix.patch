@@ -1,0 +1,31 @@
+diff --git a/lib/user/scores/Makefile b/lib/user/scores/Makefile
+index 68bdb654d..091c9c16a 100644
+--- a/lib/user/scores/Makefile
++++ b/lib/user/scores/Makefile
+@@ -7,7 +7,6 @@ install-extra:
+ 	if [ "x$(SETEGID)" != "x" ]; then \
+ 		if [ "x$(DRY)" = "x" ]; then \
+ 			${MKDIR_P} ${DESTDIR}${varshareddatadir}${PACKAGE}; \
+-			touch ${DESTDIR}${varshareddatadir}${PACKAGE}/scores.raw; \
+ 			chown -R root:${SETEGID} ${DESTDIR}${varshareddatadir}${PACKAGE}; \
+ 			chmod -R g+w ${DESTDIR}${varshareddatadir}${PACKAGE}; \
+ 		fi; \
+diff --git a/src/Makefile b/src/Makefile
+index 0013be917..a768cf360 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -71,12 +71,8 @@ post-install:
+ 	# For a shared installation, set appropriate owner for executable
+ 	# and mark it as setgid.
+ 	if [ "x$(SETEGID)" != "x" ]; then \
+-		${INSTALL_STATUS}; \
+-		if chown root:${SETEGID} ${DESTDIR}${bindir}/${PROG} && chmod g+s ${DESTDIR}${bindir}/${PROG} ; then \
+-			${INSTALL_OK}; \
+-		else \
+-			${INSTALL_FAILED}; \
+-		fi \
++		chown root:${SETEGID} ${DESTDIR}${bindir}/${PROG}; \
++		chmod g+s ${DESTDIR}${bindir}/${PROG}; \
+ 	fi
+ 
+ .PHONY : tests coverage clean-coverage tests/ran-already
