@@ -1,6 +1,6 @@
 Name:    angband
 Version: 4.2.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Popular roguelike role playing game
 
 License: GPLv2 and CC-BY
@@ -11,10 +11,9 @@ Source0: angband-%{version}-norestricted.tar.gz
 # and remove the restricted files before shipping it.
 # Invoke this script to download and generate a patched tarball:
 # ./generate-tarball.sh
-# This script removes the restricted files and applies the
-# fix-restricted.patch file to fix the source to work without
-# the restricted assets.
 Source1: generate-tarball.sh
+# The fix-restricted.patch file is used by generate-tarball.sh to fix
+# the source to work without the restricted assets.
 Source2: fix-restricted.patch
 Source3: angband.desktop
 Source4: angband.png
@@ -31,7 +30,8 @@ BuildRequires: ncurses-devel desktop-file-utils gcc
 BuildRequires: SDL2-devel SDL2_image-devel SDL2_ttf-devel
 BuildRequires: SDL2_mixer-devel python3-docutils
 
-Requires: SDL2 SDL2_image SDL2_ttf SDL2_mixer ncurses
+Requires: SDL2 SDL2_image SDL2_ttf SDL2_mixer ncurses hicolor-icon-theme
+Requires: freetype >= 2.11.1
 Requires: %{name}-data = %{version}-%{release}
 Requires(pre): shadow-utils
 
@@ -41,11 +41,12 @@ equip yourself with the best weapons and armor you can find, and finally face
 Morgoth - "The Dark Enemy".
 
 %package data
-Summary:        Angband data files
+Summary: Angband data files
 BuildArch: noarch
 
 %description data
 Data files for the Angband game
+
 
 %prep
 %setup -q
@@ -64,7 +65,8 @@ Data files for the Angband game
     --localstatedir=/var \
     --with-setgid=games \
     --enable-sdl2 \
-    --enable-sdl2-mixer
+    --enable-sdl2-mixer \
+    --disable-x11
 make %{?_smp_mflags}
 
 
@@ -74,13 +76,14 @@ install -d $RPM_BUILD_ROOT/%{_var}/games/%{name}
 install -d $RPM_BUILD_ROOT/%{_var}/games/%{name}/scores
 
 desktop-file-install \
-        --dir ${RPM_BUILD_ROOT}%{_datadir}/applications         \
-        %{SOURCE3}
+    --dir ${RPM_BUILD_ROOT}%{_datadir}/applications \
+    %{SOURCE3}
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/32x32/apps/
 install -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/32x32/apps/
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man6/
 install -p -m 644 src/angband.man $RPM_BUILD_ROOT%{_mandir}/man6/angband.6
+
 
 %files
 %license docs/copying.rst
@@ -94,12 +97,16 @@ install -p -m 644 src/angband.man $RPM_BUILD_ROOT%{_mandir}/man6/angband.6
 %{_datadir}/icons/hicolor/32x32/apps/%{name}.png
 %{_mandir}/man6/angband.*
 
+
 %files data
 %{_datadir}/angband
 
 
-
 %changelog
+* Sun Dec 12 2021 Diego Herrera <dherrera@redhat.com> 4.2.3-2
+- Restored Adam Bolt's tileset
+- Fix typos and descriptions
+
 * Sat Dec 11 2021 Diego Herrera <dherrera@redhat.com> 4.2.3-1
 - Update to 4.2.3
 - Use setgid mode with games group

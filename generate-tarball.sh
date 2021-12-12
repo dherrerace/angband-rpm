@@ -12,13 +12,13 @@ pushd angband
 git reset --hard "${GIT_TAG}"
 
 # Remove restricted assets
-## Shockbolt tileset aren't distributed under a valid license
+## Shockbolt tileset aren't provided under a valid license
 rm -rf lib/tiles/shockbolt
 
-## Sound files aren't distributed under a valid license
+## Sound files aren't provided under a valid license
 rm -rf lib/sounds/*
 
-## Windows library headers aren't distributed under a valid license
+## Library binaries should not be distributed
 rm -rf src/cocoa
 rm -rf src/nds
 rm -rf src/win
