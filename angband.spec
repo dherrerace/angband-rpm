@@ -1,6 +1,6 @@
 Name:    angband
 Version: 4.2.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Popular roguelike role playing game
 
 License: GPLv2 and CC-BY
@@ -23,7 +23,11 @@ Source4: angband.png
 # https://github.com/angband/angband/pull/5169
 Patch0:  angband-4.2.3-1-fix_events.patch
 # Fix so that it can get installed without root privileges
+# https://github.com/angband/angband/pull/5186
 Patch1:  angband-4.2.3-1-chown_fix.patch
+# Move gamedata from sysconfpath to libpath
+# https://github.com/angband/angband/pull/5185
+Patch2:  angband-4.2.3-1-gamedata_in_lib.patch
 
 BuildRequires: autoconf automake git
 BuildRequires: ncurses-devel desktop-file-utils gcc
@@ -52,18 +56,14 @@ Data files for the Angband game
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 ./autogen.sh
 
 
 %build
-./configure \
-    --prefix=%{_prefix} \
-    --bindir=%{_bindir} \
-    --datarootdir=%{_datadir} \
-    --sysconfdir=%{_datadir} \
-    --docdir=%{_mandir}/man6/ \
-    --localstatedir=/var \
+%configure \
     --with-setgid=games \
+    --with-gamedata-in-lib \
     --enable-sdl2 \
     --enable-sdl2-mixer \
     --disable-x11
@@ -90,6 +90,9 @@ install -p -m 644 src/angband.man $RPM_BUILD_ROOT%{_mandir}/man6/angband.6
 %doc docs/*.rst
 %attr(2755,root,games) %{_bindir}/%{name}
 %{_datadir}/applications/*.desktop
+%dir %{_sysconfdir}/angband
+%dir %{_sysconfdir}/angband/customize
+%config(noreplace) %{_sysconfdir}/angband/customize/*
 %dir %attr(0775,root,games) %{_var}/games/%{name}
 %dir %attr(2775,root,games) %{_var}/games/%{name}/scores
 %dir %attr(2775,root,games) %{_var}/games/%{name}/archive
@@ -103,6 +106,11 @@ install -p -m 644 src/angband.man $RPM_BUILD_ROOT%{_mandir}/man6/angband.6
 
 
 %changelog
+* Mon Dec 13 2021 Diego Herrera <dherrera@redhat.com> 4.2.3-3
+- Move customize folder to sysconfdir
+- Add patch to keep the gamedata folder to datadir
+- Add references to upstream patches
+
 * Sun Dec 12 2021 Diego Herrera <dherrera@redhat.com> 4.2.3-2
 - Restored Adam Bolt's tileset
 - Fix typos and descriptions
