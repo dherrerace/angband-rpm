@@ -1,22 +1,24 @@
 diff --git a/configure.ac b/configure.ac
-index 970a2141b..5beb92375 100644
+index 970a2141b..19c7cfdb6 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -204,6 +204,13 @@ else
+@@ -204,6 +204,15 @@ else
  	varshareddatadir="${vardatadir}"
  fi
  
 +AC_ARG_WITH(gamedata_in_lib,
 +	[AS_HELP_STRING([--gamedata-in-lib], [store the game data in the lib path.])])
 +
++GAMEDATA_IN_LIB="false"
 +if test "x$with_gamedata_in_lib" == "xyes"; then
-+	GAMEDATA_IN_LIB="$with_gamedata_in_lib"; AC_SUBST(GAMEDATA_IN_LIB)
++	GAMEDATA_IN_LIB="true"
 +	AC_DEFINE(GAMEDATA_IN_LIB, 1, [Define to store the game data in the lib path.])
 +fi
++AC_SUBST(GAMEDATA_IN_LIB)
  
  AC_SUBST([configdir])
  AC_SUBST([libdatadir])
-@@ -518,6 +525,11 @@ echo "  config path:                            ${configdir}"
+@@ -518,6 +527,11 @@ echo "  config path:                            ${configdir}"
  echo "  lib path:                               ${libdatadir}"
  echo "  doc path:                               ${docdatadir}"
  echo "  var path:                               ${displayedvardatadir}"
@@ -29,18 +31,27 @@ index 970a2141b..5beb92375 100644
  if test "x$wsetgid" = "xyes"; then
  	echo "  (as group ${SETEGID})"
 diff --git a/lib/gamedata/Makefile b/lib/gamedata/Makefile
-index 63cb9f6c7..81e7aff20 100644
+index 63cb9f6c7..0235393df 100644
 --- a/lib/gamedata/Makefile
 +++ b/lib/gamedata/Makefile
+@@ -1,7 +1,7 @@
+ MKPATH=../../mk/
+ include $(MKPATH)buildsys.mk
+ 
+-CONFIG = activation.txt artifact.txt body.txt blow_methods.txt \
++FILES = activation.txt artifact.txt body.txt blow_methods.txt \
+  blow_effects.txt brand.txt chest_trap.txt class.txt constants.txt curse.txt \
+  dungeon_profile.txt ego_item.txt flavor.txt hints.txt history.txt \
+  monster.txt monster_base.txt monster_spell.txt names.txt object.txt \
 @@ -10,4 +10,10 @@ CONFIG = activation.txt artifact.txt body.txt blow_methods.txt \
   room_template.txt shape.txt slay.txt store.txt summon.txt terrain.txt \
   trap.txt ui_entry.txt ui_entry_base.txt ui_entry_renderer.txt vault.txt \
   visuals.txt world.txt
 +
-+ifneq ($(GAMEDATA_IN_LIB),)
-+DATA := $(CONFIG)
-+undefine CONFIG
-+endif
++R1 = $(GAMEDATA_IN_LIB:true=$(FILES))
++DATA = $(R1:false=)
++R2 = $(GAMEDATA_IN_LIB:false=$(FILES))
++CONFIG = $(R2:true=)
 +
  PACKAGE = gamedata
 diff --git a/mk/extra.mk.in b/mk/extra.mk.in
