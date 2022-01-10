@@ -1,9 +1,9 @@
 Name:    angband
 Version: 4.2.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: Popular roguelike role playing game
 
-License: GPLv2 and CC-BY
+License: GPLv2
 URL:     https://rephial.org/
 Source0: angband-%{version}-norestricted.tar.gz
 # angband contains assets and code that don't comply to Fedora's 
@@ -29,35 +29,45 @@ Patch1:  angband-4.2.3-1-chown_fix.patch
 # https://github.com/angband/angband/pull/5185
 Patch2:  angband-4.2.3-1-gamedata_in_lib.patch
 
-BuildRequires: autoconf automake git
+BuildRequires: autoconf automake make
 BuildRequires: ncurses-devel desktop-file-utils gcc
 BuildRequires: SDL2-devel SDL2_image-devel SDL2_ttf-devel
 BuildRequires: SDL2_mixer-devel python3-docutils
 
-Requires: SDL2 SDL2_image SDL2_ttf SDL2_mixer ncurses hicolor-icon-theme
+Requires: hicolor-icon-theme
 Requires: freetype >= 2.11.1
 Requires: %{name}-data = %{version}-%{release}
-Requires(pre): shadow-utils
 
 %description
 A roguelike game where you explore a very deep dungeon, kill monsters, try to
 equip yourself with the best weapons and armor you can find, and finally face
 Morgoth - "The Dark Enemy".
 
+
 %package data
 Summary: Angband data files
+License: GPLv2 and CC-BY
 BuildArch: noarch
 
 %description data
 Data files for the Angband game
 
 
+%package doc
+Summary: Angband doc files
+
+%description doc
+Documentation about the Angband game
+
+
 %prep
-%setup -q
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+%autosetup -p1
 ./autogen.sh
+
+# file-not-utf8 fix
+iconv -f iso8859-1 -t utf-8 \
+    docs/version.rst > docs/version.rst.conv && \
+    mv -f docs/version.rst.conv docs/version.rst
 
 
 %build
@@ -67,13 +77,15 @@ Data files for the Angband game
     --enable-sdl2 \
     --enable-sdl2-mixer \
     --disable-x11
-make %{?_smp_mflags}
+%make_build
 
 
 %install
 %make_install
 install -d $RPM_BUILD_ROOT/%{_var}/games/%{name}
 install -d $RPM_BUILD_ROOT/%{_var}/games/%{name}/scores
+install -d $RPM_BUILD_ROOT/%{_var}/games/%{name}/archive
+install -d $RPM_BUILD_ROOT/%{_var}/games/%{name}/save
 
 desktop-file-install \
     --dir ${RPM_BUILD_ROOT}%{_datadir}/applications \
@@ -87,7 +99,6 @@ install -p -m 644 src/angband.man $RPM_BUILD_ROOT%{_mandir}/man6/angband.6
 
 %files
 %license docs/copying.rst
-%doc docs/*.rst
 %attr(2755,root,games) %{_bindir}/%{name}
 %{_datadir}/applications/*.desktop
 %dir %{_sysconfdir}/angband
@@ -102,10 +113,25 @@ install -p -m 644 src/angband.man $RPM_BUILD_ROOT%{_mandir}/man6/angband.6
 
 
 %files data
+%license docs/copying.rst
 %{_datadir}/angband
 
 
+%files doc
+%license docs/copying.rst
+%doc docs/*.rst
+
+
 %changelog
+* Mon Jan 10 2022 Diego Herrera <dherrera@redhat.com> 4.2.3-4
+- Added make as an expicit BuildRequires
+- Removed Requires that can be autodetected
+- Fixed licensing description
+- Use macros when needed
+- Separated doc files into a separate package
+- Added license to subpackages
+- Added some missing folders in the installation process
+
 * Mon Dec 13 2021 Diego Herrera <dherrera@redhat.com> 4.2.3-3
 - Move customize folder to sysconfdir
 - Add patch to keep the gamedata folder to datadir
